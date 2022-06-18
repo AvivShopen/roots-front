@@ -1,13 +1,11 @@
 
 version: 2.1
+
+orbs:
+  docker: circleci/docker@2.1.2
+
 jobs:
-  # TODO
-  test:
-    docker:
-      - image: cimg/base:latest
-    steps:
-      - checkout
-  build:
+  install_dependencies:
     docker:
       - image: cimg/node:18.4.0
     steps:
@@ -21,13 +19,45 @@ jobs:
           name: Install Dependencies
           command: |
             npm i
+  # TODO
+  test:
+    docker:
+      - image: cimg/base:latest
+    steps:
+      - checkout
+  build:
+    docker:
+      - image: cimg/node:18.4.0
+    steps:
+      - run:
+          name: Build project
+          command: |
+            npm run dev
+  deploy:
+    docker: 
+      - image: cimg/base:latest
+    steps:
+      - run: echo "`ls -al`"      
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   say-hello-workflow:
     jobs:
+      - install_dependencies:
+          filters:
+            branches:
+              only: main
       - build:
+          requires:
+            - install_dependencies
+          filters:
+            branches:
+              only: main
+      - deploy:
+          requires:
+            - install_dependencies
+            - build
           filters:
             branches:
               only: main
