@@ -3,6 +3,8 @@ version: 2.1
 jobs:
   # TODO
   test:
+    docker:
+      - image: cimg/base:latest
     steps:
       - checkout
   build:
