@@ -15,10 +15,10 @@ import { SocketIOService } from "../../Services/SocketIOService";
 import { UnitService } from "../../Services/UnitService";
 import { UserService } from "../../Services/UserService";
 import { Utilities } from "../../Services/Utilities";
-import { Role, Unit, User } from "../../types/types";
+import { Role, User } from "../../types/types";
 
 const EditRole = () => {
-  const [companyWithCadets, setCompanyWithCadets] = useState<Unit>(null!);
+  const [allUsers, setAllUsers] = useState<User[]>(null!);
   const [allRoles, setAllRoles] = useState<Role[]>([]);
   // TODO: Use Yup
   const [cadetError, setCadetError] = useState<string>(null!);
@@ -26,30 +26,26 @@ const EditRole = () => {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const theme = useTheme();
 
-  const allCadets = useMemo(() => {
-    let allCadets: User[] = [];
-    companyWithCadets?.children.forEach((team) =>
-      team.teamCadets?.forEach((cadet) => allCadets.push(cadet))
-    );
-    return allCadets;
-  }, [companyWithCadets]);
-
   useEffect(() => {
     const fetchRolesAndCadets = async () => {
       const newRoles = await RoleService.getAll();
-      const newCompanyWithCadets = await UnitService.getCadetsInCompany();
+      const allUsers = await UserService.getAllWithRoles();
 
-      setCompanyWithCadets(newCompanyWithCadets);
+      setAllUsers(allUsers);
       setAllRoles(newRoles);
       setSelectedRole(newRoles[0]);
     };
 
-    SocketIOService.socket.on("sendCompany", (company: Unit) => {
-      setCompanyWithCadets(company);
-    });
-
     fetchRolesAndCadets();
   }, []);
+
+  useEffect(() => {
+    if (selectedCadet) {
+      setSelectedRole(
+        allRoles.find((role) => role.id === selectedCadet.role.id) ?? null
+      );
+    }
+  }, [selectedCadet, allRoles]);
 
   const handleEditRole = () => {
     if (!selectedCadet) {
@@ -84,7 +80,7 @@ const EditRole = () => {
             sx={{
               width: "100%",
             }}
-            options={allCadets}
+            options={allUsers}
             value={selectedCadet}
             onChange={(event, user) => {
               setSelectedCadet(user);

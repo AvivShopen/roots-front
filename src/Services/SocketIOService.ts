@@ -14,7 +14,7 @@ export class SocketIOService {
   public static socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
   public static async initialize() {
-    this.socket = io(config.serverUrl, { withCredentials: true });
+    this.socket = io("/", { path: "/socket.io", withCredentials: true });
   }
 
   public static async auth(jwt: string) {

@@ -1,8 +1,10 @@
 import axios from "axios";
-import config from "../config/config";
 
 const axiosInstance = axios.create({
-  baseURL: `${config.serverUrl}/api`,
+  baseURL:
+    (!process.env.NODE_ENV || process.env.NODE_ENV === "development"
+      ? "http://localhost:9000"
+      : "") + `/api`,
   timeout: 2000,
   withCredentials: true,
 });
